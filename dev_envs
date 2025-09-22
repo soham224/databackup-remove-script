@@ -19,14 +19,27 @@ export ROOT_FOLDER=Tusker
 export USER_ID=97
 
 export USECASES_LIST='[
-    "blockage_found", "shutter_open", "no_mask", "falling_person",
-    "security_person_not_present", "no_gloves", "no_safety_goggles",
-    "no_safety_belt", "crowd_detected", "no_hardhat", "no_vest",
-    "four_wheeler_not_parked_in_take_off_position", "gate_open", "fire",
-    "smoke", "no_safety_shoes", "store_product_without_pallete",
-    "mishandling_of_parcel", "no_headphones"
+    "blockage_found",
+    "shutter_open",
+    "no_mask",
+    "falling_person",
+    "security_person_not_present",
+    "no_gloves",
+    "no_safety_goggles",
+    "no_safety_belt",
+    "crowd_detected",
+    "no_hardhat",
+    "no_vest",
+    "four_wheeler_not_parked_in_take_off_position",
+    "gate_open",
+    "fire",
+    "smoke",
+    "no_safety_shoes",
+    "store_product_without_pallete",
+    "mishandling_of_parcel",
+    "no_headphones"
 ]'
 
 # Explicit date range for downloads (format: DD-MM-YYYY)
-export START_DATE=23-05-2025
-export END_DATE=23-05-2025
+export START_DATETIME="01-04-2025 00:00:00"
+export END_DATETIME="01-05-2025 00:00:00"

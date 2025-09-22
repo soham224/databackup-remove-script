@@ -1,8 +1,15 @@
-# databackup-remove-script
+# Data Backup and Management Utility
 
-Data backup and image annotation utility for extracting detection results from MongoDB, downloading corresponding images from AWS S3, drawing annotated bounding boxes with labels using OpenCV, and saving the outputs organized by use-case and date on local storage.
+A robust Python-based utility for managing and processing image data stored in MongoDB and AWS S3. This toolset provides functionality to download, annotate, and manage image data with corresponding detection results.
 
-This README covers the project flow, repository structure, configuration, and instructions to run locally or via Docker.
+## Features
+
+- **Data Retrieval**: Fetch detection results from MongoDB with flexible date range filtering
+- **Image Processing**: Download and process images from AWS S3
+- **Annotation**: Draw bounding boxes and labels on images using OpenCV
+- **Data Management**: Organize and delete data based on configurable criteria
+- **Containerization**: Docker support for easy deployment
+- **Configuration**: Environment-based configuration for different environments
 
 ## Key Features
 
@@ -12,12 +19,16 @@ This README covers the project flow, repository structure, configuration, and in
 - Draw corner-style bounding boxes and labels using OpenCV.
 - Save annotated images under `ROOT_FOLDER/<label>/<YYYY-MM-DD>/`.
 
-## Repository Structure
+## Project Structure
 
 ```
 .
-├── Dockerfile
-├── README.md
+├── Dockerfile                 # Docker configuration for containerization
+├── README.md                 # This documentation file
+├── requirements.txt          # Python dependencies
+├── data-backup-download.py   # Main script for downloading and processing images
+├── beta-data-delete-script.py # Script for managing data deletion
+└── dev_envs                  # Environment configuration template
 ├── data-backup-download.py        # Main script entrypoint
 ├── dev_envs                       # Example environment variables (bash export format)
 └── requirements.txt               # Python dependencies
@@ -117,9 +128,70 @@ Outputs will be created under `ROOT_FOLDER/<label>/<YYYY-MM-DD>/` using the orig
    docker build -t databackup-remove-script:latest .
    ```
 
+## Prerequisites
+
+- Python 3.8+
+- Docker (for containerized deployment)
+- MongoDB connection details
+- AWS credentials with S3 access
+- Required Python packages (install via `pip install -r requirements.txt`)
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd databackup-remove-script
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Set up environment variables:
+   Copy the `dev_envs` file to `.env` and update the values:
+   ```bash
+   cp dev_envs .env
+   # Edit .env with your configuration
+   ```
+
+## Configuration
+
+Key environment variables (see `dev_envs` for all options):
+
+- `MONGODB_URI`: MongoDB connection string
+- `AWS_ACCESS_KEY_ID`: AWS access key
+- `AWS_SECRET_ACCESS_KEY`: AWS secret key
+- `S3_BUCKET`: S3 bucket name
+- `USECASES_LIST`: JSON array of use cases to process
+- `START_DATE`: Start date in DD-MM-YYYY format (optional)
+- `END_DATE`: End date in DD-MM-YYYY format (optional)
+
+## Usage
+
+### Local Execution
+
+1. Run the main data processing script:
+   ```bash
+   python data-backup-download.py
+   ```
+
+2. To delete data (use with caution):
+   ```bash
+   python beta-data-delete-script.py
+   ```
+
+### Docker Deployment
+
+1. Build the Docker image:
+   ```bash
+   docker build -t databackup-remove-script .
+   ```
+
 2. Run the container with environment variables. You can pass env vars individually or via an env file.
 
-   - Option A: Pass env file (recommended; create `env.list` without `export`):
+   - Option A: Pass env file (recommended; create `env.list` from `dev_envs` without `export `):
      ```bash
      # Convert dev_envs -> env.list (remove leading `export `)
      sed 's/^export \([^=]*\)=/\1=/g' dev_envs > env.list
