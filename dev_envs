@@ -42,4 +42,4 @@ export USECASES_LIST='[
 
 # Explicit date range for downloads (format: DD-MM-YYYY)
 export START_DATETIME="01-04-2025 00:00:00"
-export END_DATETIME="01-05-2025 00:00:00"
+export END_DATETIME="31-07-2025 00:00:00"
