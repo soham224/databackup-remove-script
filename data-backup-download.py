@@ -1,36 +1,12 @@
 import json
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 import boto3
 import cv2
 import numpy as np
 import requests
 from pymongo import MongoClient
-
-
-def parse_datetime(datetime_str: str) -> datetime:
-    """Parse a datetime string in format DD-MM-YYYY[ HH:MM:SS] to a timezone-aware UTC datetime object.
-    If time is not provided, it defaults to 00:00:00 in the local timezone and converts to UTC.
-    
-    Raises a ValueError if parsing fails.
-    """
-    try:
-        # Try to parse with time
-        naive_dt = datetime.strptime(datetime_str, "%d-%m-%Y %H:%M:%S")
-    except ValueError:
-        # Fall back to date only (time will be 00:00:00)
-        naive_dt = datetime.strptime(datetime_str, "%d-%m-%Y")
-    
-    # Get local timezone
-    local_tz = datetime.now().astimezone().tzinfo
-    
-    # Make datetime timezone-aware using the local timezone
-    local_dt = naive_dt.replace(tzinfo=local_tz)
-    
-    # Convert to UTC and make it timezone-naive (MongoDB stores as UTC without timezone)
-    utc_dt = local_dt.astimezone(timezone.utc)
-    return utc_dt.replace(tzinfo=None)
 
 # from dotenv import load_dotenv
 #
@@ -41,9 +17,8 @@ def parse_datetime(datetime_str: str) -> datetime:
 # -----------------------------
 
 usecases_list = json.loads(os.getenv("USECASES_LIST"))
-# Try to get datetime first, fall back to date for backward compatibility
-START_DATETIME_STR = os.getenv("START_DATETIME") or os.getenv("START_DATE")  # e.g., 20-05-2025 or 20-05-2025 14:30:00
-END_DATETIME_STR = os.getenv("END_DATETIME") or os.getenv("END_DATE")  # e.g., 20-06-2025 or 20-06-2025 23:59:59
+START_DATE_STR = os.getenv("START_DATE")  # e.g., 20-05-2025
+END_DATE_STR = os.getenv("END_DATE")  # e.g., 20-06-2025
 # -----------------------------
 # Environment Variables
 # -----------------------------
@@ -83,36 +58,34 @@ def connect_mongodb():
 
 
 def get_data(collection):
-    """Retrieve data from MongoDB for the specified datetime range if provided,
+    """Retrieve data from MongoDB for the specified date range if provided,
     otherwise for the previous calendar month.
 
-    Date/Time filtering uses the `created_date` field inclusive between start and end.
-    START_DATETIME/END_DATETIME (or START_DATE/END_DATE for backward compatibility) 
-    env vars are expected in format DD-MM-YYYY or DD-MM-YYYY HH:MM:SS.
-    Times are interpreted in local timezone and converted to UTC for the query.
+    Date filtering uses the `created_date` field inclusive between start and end.
+    START_DATE and END_DATE env vars are expected in format DD-MM-YYYY.
     """
-    # If no datetimes provided, default to previous calendar month in UTC
-    if not START_DATETIME_STR or not END_DATETIME_STR:
-        now_utc = datetime.utcnow()
-        first_day_prev_month = (now_utc.replace(day=1) - timedelta(days=1)).replace(day=1)
-        start_date = first_day_prev_month
-        end_date = (now_utc.replace(day=1) - timedelta(microseconds=1))  # Last microsecond of previous month
-    else:
-        # Parse the provided datetime strings (converted to UTC in parse_datetime)
-        start_date = parse_datetime(START_DATETIME_STR)
-        end_date = parse_datetime(END_DATETIME_STR)
-        
-        # If end datetime is at midnight, adjust to include the entire end day
-        if end_date.hour == 0 and end_date.minute == 0 and end_date.second == 0:
-            end_date = end_date.replace(hour=23, minute=59, second=59, microsecond=999999)
-    
-    print(f"Querying MongoDB for dates between {start_date} and {end_date} (UTC)")
+    start_dt = None
+    end_dt = None
+    if START_DATE_STR and END_DATE_STR:
+        try:
+            start_dt = datetime.strptime(START_DATE_STR, "%d-%m-%Y")
+            end_parsed = datetime.strptime(END_DATE_STR, "%d-%m-%Y")
+            end_dt = end_parsed + timedelta(days=1) - timedelta(microseconds=1)
+        except Exception as e:
+            print(f"Failed to parse START_DATE/END_DATE: {e}. Falling back to previous month range.")
+
+    if start_dt is None or end_dt is None:
+        today = datetime.now()
+        first_day_current_month = datetime(today.year, today.month, 1)
+        last_day_prev_month = first_day_current_month - timedelta(days=1)
+        start_dt = datetime(last_day_prev_month.year, last_day_prev_month.month, 1)
+        end_dt = last_day_prev_month
 
     query = {
         "user_id": USER_ID,
         "is_hide": False,
         "status": True,
-        "created_date": {"$gte": start_date, "$lte": end_date},
+        "created_date": {"$gte": start_dt, "$lte": end_dt},
         "result.detection": {"$exists": True, "$not": {"$size": 0}},
     }
 

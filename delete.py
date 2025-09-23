@@ -6,7 +6,7 @@ HOST = "localhost"
 PORT = 27017
 
 year = 2025
-month = 6
+month = 3
 user_id = 97
 
 client = pymongo.MongoClient(host=HOST, port=PORT)
