@@ -13,7 +13,6 @@ client = pymongo.MongoClient(host=HOST, port=PORT)
 db = client[DATABASE_NAME]
 collection = db[COLLECTION_NAME]
 
-
 delete_condition = {
     "user_id": str(user_id),
     "$expr": {
@@ -28,4 +27,3 @@ result = collection.delete_many(delete_condition)
 # print(result)
 print("FINAL OUTPUT :: :: :: :: ")
 print(result.deleted_count)
-
