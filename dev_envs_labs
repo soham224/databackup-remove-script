@@ -1,5 +1,5 @@
 # MongoDB Configuration
-export MONGO_HOST=localhost
+export MONGO_HOST=192.168.11.97
 export MONGO_PORT=27017
 export MONGO_USER=
 export MONGO_PASS=
@@ -27,11 +27,12 @@ export USECASES_LIST='[
     "reception_person_not_present",
     "reception_person_present",
     "door_open",
-    "door_close"
+    "door_close",
+    "customer_entry_exit"
 ]'
 
 # Explicit date range for downloads (format: DD-MM-YYYY)
-export START_DATE=01-06-2023
-export END_DATE=30-06-2023
+export START_DATE=01-10-2022
+export END_DATE=31-10-2022
 
-export ROOT_FOLDER=/mnt/storage01/Shruti_Workspace/Labs/Labs-June-Data-Backup-2023
+export ROOT_FOLDER=/mnt/storage01/Shruti_Workspace/Labs/Labs-Oct-Data-Backup-2022
