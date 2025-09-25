@@ -8,38 +8,30 @@ export MONGO_DB_NAME=auto-serving-results
 export MONGO_COLL_NAME=results
 
 # AWS S3 Configuration
-export AWS_BUCKET=tusker-img-storage-rpg-79
+export AWS_BUCKET=tusker-img-storage-labs-58
 
 # OneDrive Configuration
 # export ONEDRIVE_CLIENT_ID=58d5e37e-4b83-4872-937e-fccd243c52cc
 # export ONEDRIVE_CLIENT_SECRET=nLX8Q~8yFJrW7b_nTpHYat~9QLNiLi5QR1k38bXH----
 # export ONEDRIVE_REFRESH_TOKEN=1.ASsAQIK4wu19LEOMyOi2OFIhc37j1ViDS3JIk378zSQ8UswrABYrAA.AgABAwEAAABVrSpeuWamRam2jAF1XRQEAwDs_wUA9P-pYZ1puQQSQ2vXQGEbaHhBvcozqmWQdpA1G8TzOLju9utlp7v9fjSXXDwpMgNbC-zW64yezpOliL-M9kAwacbunGJICfeRuVCFtgcDa119_lw8CYoFgOhahxMe5G91SY1vmb6dM78I0DMvXlxLD8AsZAv0Dj0XoLlLCG22B8lSUZI-Gr59qSfrVrKkAW8Rkr6V9-ByKVrquHdrKRXH16DkgE0SXmkFoLCK0ZQw9W6BmXRalh6vSpCTZGnuWXne88VVGzy4_rxfPbj4aUMbGrDwd5UTAMLCqKhMnvN0Bnkpt88r9qURk3w4om_XWf5EB_qQPw7xs41Y1_EHSCOPAxWeqlPtrU29zOZWROAQaPQbwrJzKAjO9-UbeFs21nTe9NoeYFl-3BcV3fjZO60pty5yoD-MgtdpyEax4wF_0qXU4ugncIU7QbZH_FSK6UXfHguryTcvQDr9fP0x-Fliy24Ul7RNk8w9OwTlu_lAWa3UnfnuAIvkowt3rh4cKeuutZjURGA1tZWB0otbncS9lrbY4RJf_vhFEWncnbRpraNeKDzzMuSGj9-hkZO8nkC4s5bPoFxoPQqLV6OmxT0iZdrC7z6SIFYH85V0V8nJ2wJIFWE44E8CI0EdeDpd7FRM8ayoZBwMei1tNtOcemQGXTeq54Yg8xfqqqNvYWnyNVu71KE2fHEmMcu4t2ctrAHt5WOcpPzBkoSouE9nTje-3mOwkWwkyk6GAc0M1hvk8DF0vAFzKDdVipSraoQEJxuRgpgazFgUYvOrHmXEbmRfAGbeMDxfYw0f1DLpaPHfMkLz49TokRFngU731TG4
 
-export ROOT_FOLDER=/mnt/storage01/Shruti_Workspace/RPG/RPG-May-Data-Backup-2025
-export USER_ID=97
+
+export USER_ID=69
 
 export USECASES_LIST='[
-    "blockage_found",
-    "shutter_open",
-    "no_mask",
-    "falling_person",
-    "security_person_not_present",
-    "no_gloves",
-    "no_safety_goggles",
-    "no_safety_belt",
-    "crowd_detected",
-    "no_hardhat",
-    "no_vest",
-    "four_wheeler_not_parked_in_take_off_position",
-    "gate_open",
-    "fire",
-    "smoke",
-    "no_safety_shoes",
-    "store_product_without_pallete",
-    "mishandling_of_parcel",
-    "no_headphones"
+    "no_apron",
+    "mopping_not_done",
+    "mopping_done",
+    "person_near_dvr",
+    "person_inside_restricted_zone",
+    "reception_person_not_present",
+    "reception_person_present",
+    "door_open",
+    "door_close"
 ]'
 
 # Explicit date range for downloads (format: DD-MM-YYYY)
-export START_DATE=01-05-2025
-export END_DATE=31-05-2025
+export START_DATE=01-06-2023
+export END_DATE=30-06-2023
+
+export ROOT_FOLDER=/mnt/storage01/Shruti_Workspace/Labs/Labs-June-Data-Backup-2023

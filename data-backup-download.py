@@ -125,7 +125,17 @@ def to_xywh(x1, y1, x2, y2):
 
 
 def draw_annotations(image, label, coordinates):
-    x1, y1, x2, y2 = map(int, coordinates)
+    # Validate image and coordinates
+    if image is None:
+        raise ValueError("Image is None; cannot draw annotations.")
+
+    if not isinstance(coordinates, (list, tuple)) or len(coordinates) != 4:
+        raise ValueError(f"Invalid coordinates for label '{label}': {coordinates}")
+
+    try:
+        x1, y1, x2, y2 = map(int, coordinates)
+    except Exception:
+        raise ValueError(f"Non-numeric coordinates for label '{label}': {coordinates}")
     x, y, w, h = to_xywh(x1, y1, x2, y2)
     corner_length_h = w // 3
     corner_length_v = h // 3
@@ -227,22 +237,47 @@ def main():
         print(f"Downloading image from: {image_url}")
 
         image = download_image_s3(image_url, AWS_BUCKET)
+        if image is None:
+            print(f"Failed to load image for URL: {image_url}. Skipping this file.")
+            continue
 
-        for label_dict in detections:
-            if label_dict["label"] in usecases_list:
-                annotated_image = draw_annotations(image, label_dict["label"], label_dict["location"])
+        # Draw all selected detections on a copy; if any invalid annotation occurs, skip the file
+        temp_image = image.copy()
+        skip_image = False
+        selected_detections = [d for d in detections if d.get("label") in usecases_list]
 
-                created_at = record.get("created_date", datetime.now().isoformat())
-                if isinstance(created_at, str):
-                    date_folder = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y-%m-%d")
-                elif isinstance(created_at, datetime):
-                    date_folder = created_at.strftime("%Y-%m-%d")
-                else:
+        for label_dict in selected_detections:
+            try:
+                temp_image = draw_annotations(temp_image, label_dict["label"], label_dict.get("location"))
+            except Exception as e:
+                print(f"Warning: {e}. Skipping this file: {image_name}")
+                skip_image = True
+                break
+
+        if skip_image:
+            continue
+
+        created_at = record.get("created_date", datetime.now().isoformat())
+        if isinstance(created_at, str):
+            try:
+                date_folder = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y-%m-%d")
+            except Exception:
+                # Fallback for alternate string formats
+                try:
+                    date_folder = datetime.fromisoformat(created_at.replace("Z", "+00:00")).strftime("%Y-%m-%d")
+                except Exception:
                     date_folder = datetime.now().strftime("%Y-%m-%d")
+        elif isinstance(created_at, datetime):
+            date_folder = created_at.strftime("%Y-%m-%d")
+        else:
+            date_folder = datetime.now().strftime("%Y-%m-%d")
 
-                folder_path = f"{ROOT_FOLDER}/{label_dict['label']}/{date_folder}"
+        # Use the first label's folder (consistent with prior behavior of saving under each label)
+        # Since we now save once per image, choose a deterministic label (first selected)
+        first_label = selected_detections[0]["label"] if selected_detections else "unknown"
+        folder_path = f"{ROOT_FOLDER}/{first_label}/{date_folder}"
 
-                save_image_local(annotated_image, image_name, folder_path)
+        save_image_local(temp_image, image_name, folder_path)
 
 
 if __name__ == "__main__":
