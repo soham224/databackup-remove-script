@@ -26,12 +26,10 @@ A robust Python-based utility for managing and processing image data stored in M
 ├── Dockerfile                 # Docker configuration for containerization
 ├── README.md                 # This documentation file
 ├── requirements.txt          # Python dependencies
-├── data-backup-download.py   # Main script for downloading and processing images
-├── beta-data-delete-script.py # Script for managing data deletion
-└── dev_envs                  # Environment configuration template
-├── data-backup-download.py        # Main script entrypoint
-├── dev_envs                       # Example environment variables (bash export format)
-└── requirements.txt               # Python dependencies
+├── data-backup-download.py   # Script to download, annotate, and save images from S3 based on MongoDB detections
+├── delete-beta-data-all.py   # Script to delete all records for a given year/month and user
+├── delete-beta-data-condition-based.py # Script to delete records matching conditions (e.g., is_hide=True) for a given year/month and user
+└── dev_envs                  # Example environment variables (bash export format)
 ```
 
 ## High-level Flow
@@ -130,7 +128,7 @@ Outputs will be created under `ROOT_FOLDER/<label>/<YYYY-MM-DD>/` using the orig
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.9+
 - Docker (for containerized deployment)
 - MongoDB connection details
 - AWS credentials with S3 access
@@ -158,15 +156,19 @@ Outputs will be created under `ROOT_FOLDER/<label>/<YYYY-MM-DD>/` using the orig
 
 ## Configuration
 
-Key environment variables (see `dev_envs` for all options):
+Key environment variables (see `dev_envs` for examples):
 
-- `MONGODB_URI`: MongoDB connection string
-- `AWS_ACCESS_KEY_ID`: AWS access key
-- `AWS_SECRET_ACCESS_KEY`: AWS secret key
-- `S3_BUCKET`: S3 bucket name
-- `USECASES_LIST`: JSON array of use cases to process
-- `START_DATE`: Start date in DD-MM-YYYY format (optional)
-- `END_DATE`: End date in DD-MM-YYYY format (optional)
+- MongoDB
+  - `MONGO_HOST`, `MONGO_PORT`, `MONGO_USER`, `MONGO_PASS`, `MONGO_AUTH_DB_NAME`
+  - `MONGO_DB_NAME`, `MONGO_COLL_NAME`
+- AWS S3
+  - `AWS_BUCKET` (bucket name). Credentials are resolved from environment/instance role/default profile.
+- Selection and date range
+  - `USER_ID` (user filter)
+  - `USECASES_LIST` (JSON array string of labels to include)
+  - Optional: `START_DATE`, `END_DATE` in `DD-MM-YYYY`. If omitted, previous calendar month is used.
+- Output
+  - `ROOT_FOLDER` (local path where annotated images are saved)
 
 ## Usage
 
@@ -177,10 +179,15 @@ Key environment variables (see `dev_envs` for all options):
    python data-backup-download.py
    ```
 
-2. To delete data (use with caution):
-   ```bash
-   python beta-data-delete-script.py
-   ```
+2. To delete data (use with EXTREME caution):
+   - Delete all records for a year/month and user (edit variables in the file first):
+     ```bash
+     python delete-beta-data-all.py
+     ```
+   - Delete records meeting conditions (e.g., `is_hide=True`) for a year/month and user (edit variables first):
+     ```bash
+     python delete-beta-data-condition-based.py
+     ```
 
 ### Docker Deployment
 
@@ -199,10 +206,8 @@ Key environment variables (see `dev_envs` for all options):
      docker run --rm \
        --name databackup \
        --env-file env.list \
-       -v "$PWD:/workspace" \
-       -v "$PWD:${PWD}" \
+       -v "$PWD/output:/output" \
        -w /tusker-data-backup \
-       -v "$PWD:/tusker-data-backup" \
        databackup-remove-script:latest \
        python data-backup-download.py
      ```
@@ -249,6 +254,10 @@ Note: The current `Dockerfile` uses `CMD ["python", "rpg-data-backup.py"]` which
 - MongoDB connection/auth errors: Confirm host/port/firewall, and that user/password/auth DB are correct.
 - Date parsing errors: `START_DATE` and `END_DATE` must be `DD-MM-YYYY`. If parsing fails, the script logs a message and falls back to previous month.
 
+Additional notes for deletion scripts:
+
+- Both `delete-beta-data-all.py` and `delete-beta-data-condition-based.py` have variables (`year`, `month`, `user_id`, connection params) defined at the top of the files. Review and modify these before running. These scripts perform irreversible deletions.
+
 ## Security Notes
 
 - Do not commit real secrets. Use environment variables or secrets managers.
@@ -266,3 +275,7 @@ To run daily via cron (example at 2:30 AM):
 ## License
 
 Proprietary/Confidential. If you intend to open-source or redistribute, add an appropriate license.
+
+## Author
+
+Shruti Agarwal
